@@ -1,0 +1,10 @@
+# Compiled binaries
+solution
+*.exe
+*.out
+*.o
+*.a
+
+# Temporary files
+*.tmp
+*~

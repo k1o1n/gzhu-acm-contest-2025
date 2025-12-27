@@ -48,7 +48,7 @@ const int IINF = 1e9;
 int N, S, L, M, K, P, R;
 int S_per_P;
 int M_per_P;
-int total_queries;
+const int MAX_QUERIES = 5;
 
 struct FlowDemand {
     int id;
@@ -1026,7 +1026,7 @@ void solve_problem() {
     OxcBalancer ob;
     SpineBalancer sb;
     
-    for (int query = 0; query < 5; query++) {
+    for (int query = 0; query < MAX_QUERIES; query++) {
         int Q;
         cin >> Q;
         
