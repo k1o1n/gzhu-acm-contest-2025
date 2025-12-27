@@ -141,6 +141,14 @@ bool is_port_free(int oxc, int port) {
 
 void establish_connection(int oxc, int port_a, int port_b) {
     if (port_a < 0 || port_a >= R || port_b < 0 || port_b >= R) return;
+    int old_a = oxc_adjacency[oxc][port_a];
+    int old_b = oxc_adjacency[oxc][port_b];
+    if (old_a != -1 && old_a != port_b) {
+        oxc_adjacency[oxc][old_a] = -1;
+    }
+    if (old_b != -1 && old_b != port_a) {
+        oxc_adjacency[oxc][old_b] = -1;
+    }
     oxc_adjacency[oxc][port_a] = port_b;
     oxc_adjacency[oxc][port_b] = port_a;
 }
@@ -380,7 +388,44 @@ void process_flow(FlowDemand& flow) {
                 flow.assigned_oxc, flow.group_b, flow.leaf_b, flow.assigned_spine_b, flow.assigned_link_b);
 }
 
+bool validate_oxc_topology() {
+    for (int m = 0; m < M; m++) {
+        for (int r = 0; r < R; r++) {
+            int connected = oxc_adjacency[m][r];
+            if (connected == -1) continue;
+            if (connected < 0 || connected >= R) return false;
+            if (oxc_adjacency[m][connected] != r) return false;
+        }
+    }
+    return true;
+}
+
+void fix_oxc_topology() {
+    for (int m = 0; m < M; m++) {
+        vector<int> to_clear;
+        for (int r = 0; r < R; r++) {
+            int connected = oxc_adjacency[m][r];
+            if (connected == -1) continue;
+            if (connected < 0 || connected >= R) {
+                to_clear.push_back(r);
+                continue;
+            }
+            if (oxc_adjacency[m][connected] != r) {
+                to_clear.push_back(r);
+            }
+        }
+        for (int r : to_clear) {
+            int connected = oxc_adjacency[m][r];
+            oxc_adjacency[m][r] = -1;
+            if (connected >= 0 && connected < R && oxc_adjacency[m][connected] == r) {
+                oxc_adjacency[m][connected] = -1;
+            }
+        }
+    }
+}
+
 void output_oxc_topology() {
+    fix_oxc_topology();
     for (int m = 0; m < M; m++) {
         for (int r = 0; r < R; r++) {
             if (r > 0) cout << " ";
